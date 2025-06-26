@@ -28,17 +28,90 @@ pública do artigo de (Abraham, Irving & Manlove, 2007) é fornecida para leitur
 """
 import re
 import networkx as nx
+import seaborn as sns
 import matplotlib.pyplot as plt
 
-def variacao_gale_shapley():
-    """
-    Função para implementar uma variação do algoritmo de Gale-Shapley
-    para emparelhamento estável máximo entre alunos e projetos.
+class Emparelhamento:
+    """ 
+        Classe para implementação de emparelhamento estável utilizando
+        variações do algoritmo Gale-Shapley. Contém funções suporte para
+        organização e mostra dos dados.
 
-    Passos:
-    ↣ 1. Ler os dados de entrada disponibilizados
-    ↣ 2. Organizar as filas de preferências
-    ↣ 3. Emparelhar alunos e projetos com base nas preferências
-    ↣ 4. Visualizar o grafo bipartido e os emparelhamentos
+        Passos:
+        ↣ 1. Ler os dados de entrada disponibilizados
+        ↣ 2. Organizar as filas de preferências
+        ↣ 3. Emparelhar alunos e projetos com base nas preferências
+        ↣ 4. Visualizar o grafo bipartido e os emparelhamentos
     """
+    def __init__(self, grafo: nx.Graph):
+        self.grafo = grafo
+        self.alunos = {}
+        self.projetos = {}
 
+    def organiza_dados(self, alunos_txt: str = "alunos.txt", projetos_txt: str = "projetos.txt") -> None:
+        """
+        Função para extrair os dados de entrada e atualizar os dicionários de alunos e projetos.
+        
+        Args:
+            alunos (str): caminho para o txt dos alunos
+            projetos (str): caminho para o txt dos projetos
+        """
+        try:
+            # Lendo o arquivo de projetos
+            with open(projetos_txt, encoding="utf-8") as f:
+                linhas = f.readlines()
+            for linha in linhas:
+                linha = linha.strip()
+                if linha or not linha.startswith("//"):
+                    # Aplica um regex para extrair os dados
+                    match = re.match(r"\((P\d+),\s*(\d+),\s*(\d+)\)", linha)
+                    if match:
+                        codigo, vagas, nota_min = match.groups()
+                        # Atualiza o dicionário com as informações necessárias
+                        self.projetos[codigo] = {"vagas": int(vagas), "nota_min": int(nota_min)}
+
+            # Lendo o arquivo de alunos
+            with open(alunos_txt, encoding="utf-8") as f:
+                linhas = f.readlines()
+            for linha in linhas:
+                linha = linha.strip()
+                if linha or not linha.startswith("//"):
+                    # Aplica outro regex para extrair os dados
+                    match = re.match(r"\((A\d+)\):\(([^)]+)\)\s*\((\d+)\)", linha)
+                    if match:
+                        codigo, prefs, nota = match.groups()
+                        preferencias = [pref.strip() for pref in prefs.split(",")]
+                        self.alunos[codigo] = {"preferencias": preferencias, "nota": int(nota)}
+
+            print("Dados organizados com sucesso!")
+
+            for codigo, projeto in self.projetos.items():
+                print(f"Projeto {codigo}: Vagas={projeto['vagas']}, Nota Mínima={projeto['nota_min']}")
+            for codigo, aluno in self.alunos.items():
+                print(f"Aluno {codigo}: Preferências={aluno['preferencias']}, Nota={aluno['nota']}")
+
+        except Exception as e:
+            print(f"Algo deu errado! {e}")
+
+    def visualizar_grafo(self) -> None:
+        """
+        Função para visualizar o grafo bipartido de alunos e projetos.
+        """
+        # TODO, precisamos implementar a lógica de visualização do grafo aqui
+
+    def gale_shapley(self) -> None:
+        """
+        Variação do algoritmo Gale-Shapley para emparelhamento estável entre alunos e projetos.
+
+        Args:
+            projetos (dict): Dicionário com os projetos e suas informações.
+            alunos (dict): Dicionário com os alunos e suas preferências.
+        Returns:
+            nx.Graph: Grafo bipartido com os emparelhamentos estáveis.
+        """
+        # TODO, precisamos implementar a lógica do algoritmo Gale-Shapley aqui
+
+if __name__ == "__main__":
+    # Criação do grafo bipartido
+    emparelhamento = Emparelhamento(nx.Graph())
+    emparelhamento.organiza_dados()
