@@ -70,9 +70,7 @@ class Emparelhamento:
                     nota_min_projeto = info_projeto['nota_min']
 
                     # Verifica se a nota do aluno atende ao requisito mínimo do projeto
-                    if nota_aluno >= nota_min_projeto:
-                        # Adiciona a aresta entre o aluno e o projeto
-                        # Você pode adicionar atributos à aresta se quiser, como a nota do aluno
+                    if nota_aluno >= nota_min_projeto:                        # Adiciona a aresta entre o aluno e o projeto
                         self.grafo.add_edge(codigo_aluno, projeto_preferido_id, nota=nota_aluno)
         print("Arestas qualificadas adicionadas ao grafo.")
         print(f"Grafo inicial construído com {self.grafo.number_of_nodes()} nós e {self.grafo.number_of_edges()} arestas.")    

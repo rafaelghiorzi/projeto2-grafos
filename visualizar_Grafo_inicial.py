@@ -3,22 +3,18 @@ import networkx as nx
 
 def exibir_grafo(grafo: nx.Graph, titulo: str = "Grafo Bipartido Inicial") -> None:
     """
-    Exibe um grafo bipartido com rótulos e layout aprimorado para clareza.
-    Os dois conjuntos (alunos e projetos) são separados e organizados verticalmente.
+    Exibe um grafo bipartido com rótulos
     """
     if not grafo.nodes():
         print("O grafo fornecido para visualização está vazio.")
         return
 
     # Identifica os conjuntos bipartidos com base no atributo 'bipartite'
-    # Fallback para caso o atributo não esteja presente em todos os nós.
     set_alunos = {n for n, d in grafo.nodes(data=True) if d.get("bipartite") == 0}
     set_projetos = {n for n, d in grafo.nodes(data=True) if d.get("bipartite") == 1}
 
     # Se a identificação bipartida falhar, tentamos inferir com base nos nomes ou total de nós.
-    # No seu caso, como A1..A200 são alunos e P1..P50 são projetos, podemos usar isso como fallback.
     if not set_alunos and not set_projetos:
-        # Fallback se 'bipartite' attribute is missing or misassigned for all nodes
         set_alunos = {n for n in grafo.nodes() if n.startswith('A')}
         set_projetos = {n for n in grafo.nodes() if n.startswith('P')}
         if not set_alunos or not set_projetos:
@@ -49,7 +45,7 @@ def exibir_grafo(grafo: nx.Graph, titulo: str = "Grafo Bipartido Inicial") -> No
         node_size = 400
         font_size = 7
 
-    altura_figura = max(10, num_max_nodes_side * espacamento_vertical * 0.2) # Altura mínima de 10
+    altura_figura = max(10, num_max_nodes_side * espacamento_vertical * 0.2) 
 
     plt.figure(figsize=(15, altura_figura)) # Aumentei um pouco a largura para rótulos
 
@@ -65,7 +61,6 @@ def exibir_grafo(grafo: nx.Graph, titulo: str = "Grafo Bipartido Inicial") -> No
     nx.draw_networkx_edges(grafo, pos, width=0.8, alpha=0.5, edge_color="gray")
 
     # Desenha os rótulos dos nós
-    # Esta é a parte essencial para que os nomes apareçam
     nx.draw_networkx_labels(grafo, pos, font_size=font_size, font_weight='bold')
 
     plt.title(titulo, fontsize=16, pad=20) # Título maior e com mais espaçamento
