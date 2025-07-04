@@ -30,6 +30,7 @@ import re
 import networkx as nx
 import seaborn as sns
 import matplotlib.pyplot as plt
+from visualizar_Grafo_inicial import exibir_grafo 
 
 class Emparelhamento:
     """ 
@@ -43,6 +44,40 @@ class Emparelhamento:
         ↣ 3. Emparelhar alunos e projetos com base nas preferências
         ↣ 4. Visualizar o grafo bipartido e os emparelhamentos
     """
+    def construir_grafo_inicial(self):
+        """
+        Constrói o grafo bipartido inicial, adicionando nós para alunos e projetos,
+        e arestas entre eles com base nas preferências dos alunos e requisitos de nota dos projetos.
+        """
+        # 1. Adiciona nós para os alunos
+        for codigo_aluno in self.alunos.keys():
+            self.grafo.add_node(codigo_aluno, bipartite=0) # '0' representa o conjunto dos alunos
+
+        # 2. Adiciona nós para os projetos
+        for codigo_projeto in self.projetos.keys():
+            self.grafo.add_node(codigo_projeto, bipartite=1) # '1' representa o conjunto dos projetos
+        print("Nós de alunos e projetos criados no grafo.")
+
+        # 3. Adiciona arestas com as combinações possíveis
+        for codigo_aluno, info_aluno in self.alunos.items():
+            nota_aluno = info_aluno['nota']
+            preferencias_aluno = info_aluno['preferencias']
+
+            for projeto_preferido_id in preferencias_aluno:
+                # Verifica se o projeto preferido existe no dicionário de projetos
+                if projeto_preferido_id in self.projetos:
+                    info_projeto = self.projetos[projeto_preferido_id]
+                    nota_min_projeto = info_projeto['nota_min']
+
+                    # Verifica se a nota do aluno atende ao requisito mínimo do projeto
+                    if nota_aluno >= nota_min_projeto:
+                        # Adiciona a aresta entre o aluno e o projeto
+                        # Você pode adicionar atributos à aresta se quiser, como a nota do aluno
+                        self.grafo.add_edge(codigo_aluno, projeto_preferido_id, nota=nota_aluno)
+        print("Arestas qualificadas adicionadas ao grafo.")
+        print(f"Grafo inicial construído com {self.grafo.number_of_nodes()} nós e {self.grafo.number_of_edges()} arestas.")    
+        return self.grafo
+    
     def __init__(self, grafo: nx.Graph):
         self.grafo = grafo
         self.alunos = {}
@@ -93,10 +128,10 @@ class Emparelhamento:
         except Exception as e:
             print(f"Algo deu errado! {e}")
 
-    def visualizar_grafo(self) -> None:
-        """
-        Função para visualizar o grafo bipartido de alunos e projetos.
-        """
+#    def visualizar_grafo(self) -> None:
+#        """
+#        Função para visualizar o grafo bipartido de alunos e projetos.
+#        """
         # TODO, precisamos implementar a lógica de visualização do grafo aqui
 
     def gale_shapley(self) -> None:
@@ -115,3 +150,5 @@ if __name__ == "__main__":
     # Criação do grafo bipartido
     emparelhamento = Emparelhamento(nx.Graph())
     emparelhamento.organiza_dados()
+    grafo_inicial = emparelhamento.construir_grafo_inicial()
+    exibir_grafo(grafo_inicial)
