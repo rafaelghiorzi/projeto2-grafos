@@ -26,62 +26,25 @@ código do projeto, número de vagas, requisito mínimo das vagas, bem como dos 
 preferências de projetos na ordem e suas notas indviduais, é fornecido como entrada. Uma versão
 pública do artigo de (Abraham, Irving & Manlove, 2007) é fornecida para leitura.
 """
+
 import re
 import networkx as nx
 import seaborn as sns
 import matplotlib.pyplot as plt
-from visualizar_Grafo_inicial import exibir_grafo 
 
 class Emparelhamento:
-    """ 
-        Classe para implementação de emparelhamento estável utilizando
-        variações do algoritmo Gale-Shapley. Contém funções suporte para
-        organização e mostra dos dados.
-
-        Passos:
-        ↣ 1. Ler os dados de entrada disponibilizados
-        ↣ 2. Organizar as filas de preferências
-        ↣ 3. Emparelhar alunos e projetos com base nas preferências
-        ↣ 4. Visualizar o grafo bipartido e os emparelhamentos
     """
-    def construir_grafo_inicial(self):
-        """
-        Constrói o grafo bipartido inicial, adicionando nós para alunos e projetos,
-        e arestas entre eles com base nas preferências dos alunos e requisitos de nota dos projetos.
-        """
-        # 1. Adiciona nós para os alunos
-        for codigo_aluno in self.alunos.keys():
-            self.grafo.add_node(codigo_aluno, bipartite=0) # '0' representa o conjunto dos alunos
+    Classe para implementar o algoritmo de emparelhamento estável máximo.
+    Utiliza uma variação do algoritmo de Gale-Shapley e possui algumas
+    funções auxiliares para manipulação de dados e visualização de grafos.
+    """
 
-        # 2. Adiciona nós para os projetos
-        for codigo_projeto in self.projetos.keys():
-            self.grafo.add_node(codigo_projeto, bipartite=1) # '1' representa o conjunto dos projetos
-        print("Nós de alunos e projetos criados no grafo.")
-
-        # 3. Adiciona arestas com as combinações possíveis
-        for codigo_aluno, info_aluno in self.alunos.items():
-            nota_aluno = info_aluno['nota']
-            preferencias_aluno = info_aluno['preferencias']
-
-            for projeto_preferido_id in preferencias_aluno:
-                # Verifica se o projeto preferido existe no dicionário de projetos
-                if projeto_preferido_id in self.projetos:
-                    info_projeto = self.projetos[projeto_preferido_id]
-                    nota_min_projeto = info_projeto['nota_min']
-
-                    # Verifica se a nota do aluno atende ao requisito mínimo do projeto
-                    if nota_aluno >= nota_min_projeto:                        # Adiciona a aresta entre o aluno e o projeto
-                        self.grafo.add_edge(codigo_aluno, projeto_preferido_id, nota=nota_aluno)
-        print("Arestas qualificadas adicionadas ao grafo.")
-        print(f"Grafo inicial construído com {self.grafo.number_of_nodes()} nós e {self.grafo.number_of_edges()} arestas.")    
-        return self.grafo
-    
-    def __init__(self, grafo: nx.Graph):
-        self.grafo = grafo
+    def __init__(self) -> None:
+        self.grafo = nx.Graph()
         self.alunos = {}
         self.projetos = {}
 
-    def organiza_dados(self, alunos_txt: str = "alunos.txt", projetos_txt: str = "projetos.txt") -> None:
+    def organizar_dados(self, alunos_txt: str = "alunos.txt", projetos_txt: str = "projetos.txt") -> None:
         """
         Função para extrair os dados de entrada e atualizar os dicionários de alunos e projetos.
         
@@ -118,35 +81,215 @@ class Emparelhamento:
 
             print("Dados organizados com sucesso!")
 
-            for codigo, projeto in self.projetos.items():
-                print(f"Projeto {codigo}: Vagas={projeto['vagas']}, Nota Mínima={projeto['nota_min']}")
-            for codigo, aluno in self.alunos.items():
-                print(f"Aluno {codigo}: Preferências={aluno['preferencias']}, Nota={aluno['nota']}")
-
         except Exception as e:
             print(f"Algo deu errado! {e}")
 
-#    def visualizar_grafo(self) -> None:
-#        """
-#        Função para visualizar o grafo bipartido de alunos e projetos.
-#        """
-        # TODO, precisamos implementar a lógica de visualização do grafo aqui
-
-    def gale_shapley(self) -> None:
+    def construir_grafo_inicial(self) -> None:
         """
-        Variação do algoritmo Gale-Shapley para emparelhamento estável entre alunos e projetos.
+        Constrói o grafo bipartido inicial, adicionando nós para alunos e projetos,
+        e arestas entre eles com base nas preferências dos alunos e requisitos de nota dos projetos.
+        """
+        # 1. Adiciona nós para os alunos
+        for codigo_aluno in self.alunos.keys():
+            self.grafo.add_node(codigo_aluno, bipartite=0) # '0' representa o conjunto dos alunos
+
+        # 2. Adiciona nós para os projetos
+        for codigo_projeto in self.projetos.keys():
+            self.grafo.add_node(codigo_projeto, bipartite=1) # '1' representa o conjunto dos projetos
+        print("Nós de alunos e projetos criados no grafo.")
+
+        # 3. Adiciona arestas com as combinações possíveis
+        for codigo_aluno, info_aluno in self.alunos.items():
+            nota_aluno = info_aluno['nota']
+            preferencias_aluno = info_aluno['preferencias']
+
+            for projeto_preferido_id in preferencias_aluno:
+                # Verifica se o projeto preferido existe no dicionário de projetos
+                if projeto_preferido_id in self.projetos:
+                    info_projeto = self.projetos[projeto_preferido_id]
+                    nota_min_projeto = info_projeto['nota_min']
+
+                    # Verifica se a nota do aluno atende ao requisito mínimo do projeto
+                    if nota_aluno >= nota_min_projeto:                        # Adiciona a aresta entre o aluno e o projeto
+                        self.grafo.add_edge(codigo_aluno, projeto_preferido_id, nota=nota_aluno)
+        print("Arestas qualificadas adicionadas ao grafo.")
+        print(f"Grafo inicial construído com {self.grafo.number_of_nodes()} nós e {self.grafo.number_of_edges()} arestas.")    
+
+    def exibir_grafo(self, titulo: str = "Grafo Bipartido Inicial") -> None:
+        """
+        Exibe um grafo bipartido com rótulos
+        
+        Args:
+            titulo (str): Título do grafo a ser exibido
+        """
+        if not self.grafo.nodes():
+            print("O grafo fornecido para visualização está vazio.")
+            return
+        # Identifica os conjuntos bipartidos com base no atributo 'bipartite'
+        set_alunos = {n for n, d in self.grafo.nodes(data=True) if d.get("bipartite") == 0}
+        set_projetos = {n for n, d in self.grafo.nodes(data=True) if d.get("bipartite") == 1}
+
+        # Se a identificação bipartida falhar, tentamos inferir com base nos nomes ou total de nós.
+        if not set_alunos and not set_projetos:
+            set_alunos = {n for n in self.grafo.nodes() if n.startswith('A')}
+            set_projetos = {n for n in self.grafo.nodes() if n.startswith('P')}
+            if not set_alunos or not set_projetos:
+                print("Aviso: Não foi possível identificar as partições bipartidas (bipartite=0/1 ou 'A'/'P' no nome).")
+                print("O layout bipartido pode não ser aplicado corretamente.")
+                # Se ainda assim não der, use um layout genérico
+                pos = nx.spring_layout(self.grafo)
+            else:
+                # Caso os atributos não existam, mas os nomes sigam o padrão 'A'/'P'
+                pos = nx.bipartite_layout(self.grafo, set_alunos)
+        else:
+            # Caso os atributos estejam corretos, use o layout bipartido
+            pos = nx.bipartite_layout(self.grafo, set_alunos)
+        # Determina o espaçamento vertical e a altura da figura de forma dinâmica
+        # para melhor acomodar a quantidade de nós.
+        num_max_nodes_side = max(len(set_alunos), len(set_projetos))
+        espacamento_vertical = 1.0 # Espaçamento base entre os nós
+        
+        # Ajusta o node_size e font_size com base no número de nós
+        if num_max_nodes_side > 100:
+            node_size = 150
+            font_size = 5
+        elif num_max_nodes_side > 50:
+            node_size = 250
+            font_size = 6
+        else:
+            node_size = 400
+            font_size = 7
+
+        altura_figura = max(10, num_max_nodes_side * espacamento_vertical * 0.2) 
+        plt.figure(figsize=(15, altura_figura)) # Aumentei um pouco a largura para rótulos
+        # Desenha os nós dos alunos
+        nx.draw_networkx_nodes(self.grafo, pos, nodelist=list(set_alunos), node_color="#87CEFA", # Azul claro
+                            node_size=node_size, edgecolors='black', label="Alunos", alpha=0.9)
+        # Desenha os nós dos projetos
+        nx.draw_networkx_nodes(self.grafo, pos, nodelist=list(set_projetos), node_color="#98FB98", # Verde claro
+                            node_size=node_size, edgecolors='black', label="Projetos", alpha=0.9)
+        # Desenha as arestas
+        nx.draw_networkx_edges(self.grafo, pos, width=0.8, alpha=0.5, edge_color="gray")
+        # Desenha os rótulos dos nós
+        nx.draw_networkx_labels(self.grafo, pos, font_size=font_size, font_weight='bold')
+        plt.title(titulo, fontsize=16, pad=20) # Título maior e com mais espaçamento
+        plt.axis("off") # Desliga os eixos
+        plt.tight_layout() # Ajusta o layout para evitar sobreposição
+        plt.show() # Exibe a janela do grafo
+
+    def matriz_emparelhamento(self) -> None:
+        """
+        Cria a matriz de emparelhamento final, mostrando os alunos e seus projetos escolhidos,
+        """
+        
+
+    def gale_shapley(self, iteracoes: int) -> None:
+        """
+        Implementa a variação do algoritmo de Gale-Shapley para encontrar um emparelhamento estável máximo.
 
         Args:
-            projetos (dict): Dicionário com os projetos e suas informações.
-            alunos (dict): Dicionário com os alunos e suas preferências.
-        Returns:
-            nx.Graph: Grafo bipartido com os emparelhamentos estáveis.
+            iteracoes (int): Número de iterações para o emparelhamento
         """
-        # TODO, precisamos implementar a lógica do algoritmo Gale-Shapley aqui
+
+        # Inicializa as estruturas necessárias
+        alunos_disponiveis = list(self.alunos.keys())
+        # Os projetos com vagas ocupadas
+        vagas_ocupadas = {projeto: [] for projeto in self.projetos.keys()}
+        # As propostas já feitas pelos alunos
+        propostas = {aluno: [] for aluno in self.alunos.keys()}
+
+        for i in range(iteracoes):
+            print(f"Iteração {i + 1} de {iteracoes}")
+
+            # Condições de parada
+            # 1. Se não tiver alunos disponíveis para serem emparelhados
+            if not alunos_disponiveis:
+                print("Emparelhamento máximo alcançado: todos os alunos foram processados")
+                self.exibir_grafo(titulo="Grafo Bipartido - Emparelhamento Final")
+                break
+
+            # 2. Se todos os alunos disponíveis não tiverem mais preferências
+            alunos_sem_opcoes = [aluno for aluno in alunos_disponiveis
+                                if len(propostas[aluno]) == len(self.alunos[aluno]['preferencias'])
+                                ]
+            if len(alunos_disponiveis) == len(alunos_sem_opcoes):
+                print("Emparelhamento máximo alcançado: nenhum aluno pode fazer mais propostas")
+                print(f"Quantidade de iterações: {i + 1}")
+                self.exibir_grafo(titulo="Grafo Bipartido - Emparelhamento Final")
+                break
+
+            # Pega um aluno para tentar o emparelhamento
+            aluno = alunos_disponiveis.pop(0)
+            # Informações do aluno
+            nota_aluno = self.alunos[aluno]['nota']
+            pref_aluno = self.alunos[aluno]['preferencias']
+
+            # Encontrar o próximo projeto na lista de preferênias do aluno
+            projeto_escolhido = None
+            for projeto in pref_aluno:
+                # Se o aluno ainda não tiver feito proposta pra esse projeto
+                if projeto not in propostas[aluno] and projeto in self.projetos:
+                    # A nota do aluno tem que ser necessária
+                    if nota_aluno >= self.projetos[projeto]['nota_min']:
+                        projeto_escolhido = projeto
+                        break
+
+            # Se existe um projeto escolhido, adiciona ele no emparelhamento
+            if projeto_escolhido:
+                # Atualiza as propostas feitas do aluno
+                propostas[aluno].append(projeto_escolhido)
+                # Pega as quantidade de vagas do projeto escolhido
+                qtd_vagas = self.projetos[projeto_escolhido]['vagas']
+
+                # Checa se existe vagas no projeto
+                if len(vagas_ocupadas[projeto_escolhido]) < qtd_vagas:
+                    # Se tem vaga, coloca o aluno na vaga
+                    vagas_ocupadas[projeto_escolhido].append(aluno)
+                    # Adiciona uma conexão no grafo de emparelhamento
+                    self.grafo.add_edge(aluno, projeto_escolhido, nota=nota_aluno)
+                    print(f"Aluno {aluno} emparelhado com o projeto {projeto_escolhido}")
+
+                else:
+                    # Se o projeto está cheio, verifica se o aluno tem preferência
+                    alunos_no_projeto = vagas_ocupadas[projeto_escolhido]
+                    # Pega o aluno com menor nota dentro do projeto
+                    aluno_menor_nota = min(alunos_no_projeto, key=lambda a: self.alunos[a]["nota"])
+
+                    nota_menor = self.alunos[aluno_menor_nota]["nota"]
+                    if nota_aluno > nota_menor:
+                        # Remove o aluno com menor nota do projeto
+                        vagas_ocupadas[projeto_escolhido].remove(aluno_menor_nota)
+                        vagas_ocupadas[projeto_escolhido].append(aluno)
+
+                        # Remove a conexão entre o aluno anterior e adiciona uma nova
+                        self.grafo.remove_edge(aluno_menor_nota, projeto_escolhido)
+                        self.grafo.add_edge(aluno, projeto_escolhido, nota=nota_aluno)
+
+                        # Se o aluno que foi removido do projeto ainda tiver preferencias, volta pra lista de iterações
+                        if len(propostas[aluno_menor_nota]) < len(self.alunos[aluno_menor_nota]['preferencias']):
+                            alunos_disponiveis.append(aluno_menor_nota)
+
+                        print(f"Aluno {aluno} emparelhado com o projeto {projeto_escolhido}, substituindo {aluno_menor_nota}.")
+
+                    else:
+                        # Se o aluno não é melhor, volta para a lista de disponíveis
+                        alunos_disponiveis.append(aluno)
+                        print(f"Aluno {aluno} não foi emparelhado com o projeto {projeto_escolhido}, pois não é melhor que os já emparelhados.")
+            else:
+                print(f"Aluno {aluno} não escolheu nenhum projeto válido nesta iteração.")
+
+            # if i % 100 == 0:
+                # self.exibir_grafo(titulo=f"Grafo Bipartido - Iteração {i}")
+
+
 
 if __name__ == "__main__":
-    # Criação do grafo bipartido
-    emparelhamento = Emparelhamento(nx.Graph())
-    emparelhamento.organiza_dados()
-    grafo_inicial = emparelhamento.construir_grafo_inicial()
-    exibir_grafo(grafo_inicial)
+    emparelhamento = Emparelhamento()
+    emparelhamento.organizar_dados()
+    # emparelhamento.construir_grafo_inicial()
+
+    emparelhamento.gale_shapley(iteracoes=1000)
+
+    # Exibe o número de nós e arestas no grafo
+    print(f"Número de nós: {len(emparelhamento.grafo.nodes())}")
+    print(f"Número de arestas: {len(emparelhamento.grafo.edges())}")
