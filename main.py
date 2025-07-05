@@ -148,6 +148,27 @@ class Emparelhamento:
         plt.tight_layout() # Ajusta o layout para evitar sobreposição
         plt.show() # Exibe a janela do grafo
 
+    def Emparelhamento_final(self)-> None:
+        # Matriz de emparelhamento 
+        # Ordenar os alunos e projetos para fixar a ordem da matriz
+        alunos_ordenados = list(self.alunos.keys())
+        projetos_ordenados = list(self.projetos.keys())
+
+        # Cria matriz vazia 
+        matriz_final = [['' for _ in projetos_ordenados] for _ in alunos_ordenados]
+
+        # Preenche com '*' onde há emparelhamento 
+        for aluno, projeto in self.grafo.edges():
+            if aluno in self.alunos and projeto in self.projetos:
+                i = alunos_ordenados.index(aluno)
+                j = projetos_ordenados.index(projeto)
+                matriz_final[i][j] = '*'
+
+        # Converte para DataFrame e salva no csv
+        df = pd.DataFrame(matriz_final, index=alunos_ordenados, columns=projetos_ordenados)
+        df.to_csv("matriz_emparelhamento_final.csv")
+
+
     def gale_shapley(self, iteracoes: int) -> None:
         """
         Implementa a variação do algoritmo de Gale-Shapley para encontrar um emparelhamento estável máximo.
@@ -245,31 +266,13 @@ class Emparelhamento:
 
             if i % 100 == 0:
                 self.exibir_grafo(titulo=f"Grafo Bipartido - Iteração {i}")
-                
-        # Matriz de emparelhamento 
-        # Ordenar os alunos e projetos para fixar a ordem da matriz
-        alunos_ordenados = list(self.alunos.keys())
-        projetos_ordenados = list(self.projetos.keys())
-
-        # Cria matriz vazia 
-        matriz_final = [['' for _ in projetos_ordenados] for _ in alunos_ordenados]
-
-        # Preenche com '*' onde há emparelhamento 
-        for aluno, projeto in self.grafo.edges():
-            if aluno in self.alunos and projeto in self.projetos:
-                i = alunos_ordenados.index(aluno)
-                j = projetos_ordenados.index(projeto)
-                matriz_final[i][j] = '*'
-
-        # Converte para DataFrame e salva no csv
-        df = pd.DataFrame(matriz_final, index=alunos_ordenados, columns=projetos_ordenados)
-        df.to_csv("matriz_emparelhamento_final.csv")
 
 
 if __name__ == "__main__":
     emparelhamento = Emparelhamento()
     emparelhamento.organizar_dados()
     emparelhamento.gale_shapley(iteracoes=1000)
+    emparelhamento.Emparelhamento_final()
 
     # Exibe o número de nós e arestas no grafo
     print(f"Número de nós: {len(emparelhamento.grafo.nodes())}")
