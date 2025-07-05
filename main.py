@@ -148,11 +148,6 @@ class Emparelhamento:
         plt.tight_layout() # Ajusta o layout para evitar sobreposição
         plt.show() # Exibe a janela do grafo
 
-    def matriz_emparelhamento(self) -> None:
-        """
-        Cria a matriz de emparelhamento final, mostrando os alunos e seus projetos escolhidos,
-        """
-
     def gale_shapley(self, iteracoes: int) -> None:
         """
         Implementa a variação do algoritmo de Gale-Shapley para encontrar um emparelhamento estável máximo.
@@ -250,25 +245,25 @@ class Emparelhamento:
 
             if i % 100 == 0:
                 self.exibir_grafo(titulo=f"Grafo Bipartido - Iteração {i}")
-
-
+                
+        # Matriz de emparelhamento 
         # Ordenar os alunos e projetos para fixar a ordem da matriz
         alunos_ordenados = list(self.alunos.keys())
         projetos_ordenados = list(self.projetos.keys())
 
-        matriz_final = np.zeros((len(alunos_ordenados), len(projetos_ordenados)), dtype=int)
+        # Cria matriz vazia 
+        matriz_final = [['' for _ in projetos_ordenados] for _ in alunos_ordenados]
 
-        # Preenche com 1 onde há emparelhamento 
+        # Preenche com '*' onde há emparelhamento (
         for aluno, projeto in self.grafo.edges():
             if aluno in self.alunos and projeto in self.projetos:
                 i = alunos_ordenados.index(aluno)
                 j = projetos_ordenados.index(projeto)
-                matriz_final[i][j] = 1 
+                matriz_final[i][j] = '*'
 
-        
-        # Converte para excel
+        # Converte para DataFrame e salva no csv
         df = pd.DataFrame(matriz_final, index=alunos_ordenados, columns=projetos_ordenados)
-        df.to_csv("matriz_emparelhamento_final.csv") 
+        df.to_csv("matriz_emparelhamento_final.csv")
 
 
 if __name__ == "__main__":
