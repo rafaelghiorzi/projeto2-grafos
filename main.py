@@ -30,6 +30,9 @@ pública do artigo de (Abraham, Irving & Manlove, 2007) é fornecida para leitur
 import re
 import networkx as nx
 import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
 
 class Emparelhamento:
     """
@@ -247,6 +250,26 @@ class Emparelhamento:
 
             if i % 100 == 0:
                 self.exibir_grafo(titulo=f"Grafo Bipartido - Iteração {i}")
+
+
+        # Ordenar os alunos e projetos para fixar a ordem da matriz
+        alunos_ordenados = list(self.alunos.keys())
+        projetos_ordenados = list(self.projetos.keys())
+
+        matriz_final = np.zeros((len(alunos_ordenados), len(projetos_ordenados)), dtype=int)
+
+        # Preenche com 1 onde há emparelhamento 
+        for aluno, projeto in self.grafo.edges():
+            if aluno in self.alunos and projeto in self.projetos:
+                i = alunos_ordenados.index(aluno)
+                j = projetos_ordenados.index(projeto)
+                matriz_final[i][j] = 1 
+
+        
+        # Converte para excel
+        df = pd.DataFrame(matriz_final, index=alunos_ordenados, columns=projetos_ordenados)
+        df.to_csv("matriz_emparelhamento_final.csv") 
+
 
 if __name__ == "__main__":
     emparelhamento = Emparelhamento()
