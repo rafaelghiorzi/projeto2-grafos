@@ -254,7 +254,7 @@ class Emparelhamento:
         # Cria matriz vazia 
         matriz_final = [['' for _ in projetos_ordenados] for _ in alunos_ordenados]
 
-        # Preenche com '*' onde há emparelhamento (
+        # Preenche com '*' onde há emparelhamento 
         for aluno, projeto in self.grafo.edges():
             if aluno in self.alunos and projeto in self.projetos:
                 i = alunos_ordenados.index(aluno)
