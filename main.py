@@ -168,6 +168,17 @@ class Emparelhamento:
         df = pd.DataFrame(matriz_final, index=alunos_ordenados, columns=projetos_ordenados)
         df.to_csv("matriz_emparelhamento_final.csv")
 
+    def exibir_escolhas(self) -> None:
+        """
+        Exibe as turmas e projetos emparelhados, mostrando o projeto e os alunos emparelhados com ele,
+        """
+        print("\nEmparelhamento final:")
+        for projeto in self.projetos.keys():
+            alunos_no_projeto = [aluno for aluno, proj in self.grafo.edges() if proj == projeto]
+            if alunos_no_projeto:
+                print(f"Projeto {projeto}: Alunos emparelhados: {', '.join(alunos_no_projeto)}")
+            else:
+                print(f"Projeto {projeto}: Nenhum aluno emparelhado.")
 
     def gale_shapley(self, iteracoes: int) -> None:
         """
@@ -195,9 +206,13 @@ class Emparelhamento:
                 break
 
             # 2. Se todos os alunos disponíveis não tiverem mais preferências
-            alunos_sem_opcoes = [aluno for aluno in alunos_disponiveis
-                                if len(propostas[aluno]) == len(self.alunos[aluno]['preferencias'])
-                                ]
+            alunos_sem_opcoes = []
+            for aluno in alunos_disponiveis:
+                preferencias_validas = [pref for pref in self.alunos[aluno]['preferencias']
+                                        if pref in self.projetos and pref not in propostas[aluno]]
+                if not preferencias_validas:
+                    alunos_sem_opcoes.append(aluno)
+
             if len(alunos_disponiveis) == len(alunos_sem_opcoes):
                 print("Emparelhamento máximo alcançado: nenhum aluno pode fazer mais propostas")
                 print(f"Quantidade de iterações: {i + 1}")
@@ -239,7 +254,7 @@ class Emparelhamento:
                     # Se o projeto está cheio, verifica se o aluno tem preferência
                     alunos_no_projeto = vagas_ocupadas[projeto_escolhido]
                     # Pega o aluno com menor nota dentro do projeto
-                    aluno_menor_nota = min(alunos_no_projeto, key=lambda a: self.alunos[a]["nota"])
+                    aluno_menor_nota = min(alunos_no_projeto, key=lambda a: (self.alunos[a]["nota"], a))
 
                     nota_menor = self.alunos[aluno_menor_nota]["nota"]
                     if nota_aluno > nota_menor:
@@ -250,13 +265,13 @@ class Emparelhamento:
                         # Remove a conexão entre o aluno anterior e adiciona uma nova
                         self.grafo.remove_edge(aluno_menor_nota, projeto_escolhido)
                         self.grafo.add_edge(aluno, projeto_escolhido, nota=nota_aluno)
-
-                        # Se o aluno que foi removido do projeto ainda tiver preferencias, volta pra lista de iterações
-                        if len(propostas[aluno_menor_nota]) < len(self.alunos[aluno_menor_nota]['preferencias']):
-                            alunos_disponiveis.append(aluno_menor_nota)
-
+                        
                         print(f"Aluno {aluno} emparelhado com o projeto {projeto_escolhido}, substituindo {aluno_menor_nota}.")
 
+                        preferencias_restantes = [pref for pref in self.alunos[aluno_menor_nota]['preferencias']
+                                                  if pref in self.projetos and pref not in propostas[aluno_menor_nota]]
+                        if preferencias_restantes:
+                            alunos_disponiveis.append(aluno_menor_nota)
                     else:
                         # Se o aluno não é melhor, volta para a lista de disponíveis
                         alunos_disponiveis.append(aluno)
@@ -266,6 +281,9 @@ class Emparelhamento:
 
             if i % 100 == 0:
                 self.exibir_grafo(titulo=f"Grafo Bipartido - Iteração {i}")
+
+        print("Emparelhamento finalizado.")
+        self.exibir_escolhas()
 
 
 if __name__ == "__main__":
